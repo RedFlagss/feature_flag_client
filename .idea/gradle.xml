@@ -8,6 +8,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/client-sample-java" />
             <option value="$PROJECT_DIR$/client-sample-spring" />
             <option value="$PROJECT_DIR$/feature-flag-sdk-core" />
             <option value="$PROJECT_DIR$/feature-flag-sdk-spring" />
