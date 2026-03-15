@@ -1,3 +1,4 @@
 rootProject.name = 'feature_flag_client'
 include(":feature-flag-sdk-core")
 include(":feature-flag-sdk-spring")
+include(":client-sample-spring")
