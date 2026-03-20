@@ -7,5 +7,8 @@ public class AppConfig {
     private String sdkPassword;
 
     public AppConfig(String backendUrl, String sdkLogin, String sdkPassword) {
+        this.backendUrl = backendUrl;
+        this.sdkLogin = sdkLogin;
+        this.sdkPassword = sdkPassword;
     }
 }

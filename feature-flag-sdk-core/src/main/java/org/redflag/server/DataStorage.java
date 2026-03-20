@@ -1,7 +1,5 @@
 package org.redflag.server;
 
-import org.redflag.model.FeatureFlag;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +14,16 @@ public class DataStorage {
     }
 
     public boolean getValue(String flagKey) {
+        if (ffStorage.putIfAbsent(flagKey, false) == null) {
+            System.out.println("Flag not found: " + flagKey + " Creating flag.");
+        };
+        //TODO: call to main service
         return ffStorage.get(flagKey);
     }
 
     private HashMap<String, Boolean> collectFlags() {
+        //TODO: replace with call to main service / or add call to main service
+
         HashMap<String, Boolean> ffMap = new HashMap<>();
 
         try (InputStream input = getClass().getClassLoader()
