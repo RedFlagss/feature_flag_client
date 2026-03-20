@@ -1,12 +1,19 @@
 package org.redflag;
 
+import org.redflag.configuration.AppConfig;
 import org.redflag.server.DataStorage;
 import org.redflag.service.FeatureFlagService;
 import org.redflag.service.impl.FeatureFlagServiceImp;
 
 public class Main {
     public static void main(String[] args) {
-        DataStorage dataStorage = new DataStorage();
+        AppConfig appConfig = AppConfig.createInstance(
+                        "/",
+                        "login",
+                        "password"
+        );
+        DataStorage dataStorage = DataStorage.getInstance(appConfig);
+
         FeatureFlagService featureFlagService = new FeatureFlagServiceImp(dataStorage);
 
         if (featureFlagService.isEnabled("flag")) {

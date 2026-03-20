@@ -1,28 +1,48 @@
 package org.redflag.server;
 
+import org.redflag.configuration.AppConfig;
+import org.redflag.service.ServerRequestsService;
+import org.redflag.service.impl.ServerRequestsServiceImp;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 public class DataStorage {
-    private Map<String, Boolean> ffStorage;
-    private final Properties properties = new Properties();
+    private final Map<String, Boolean> ffStorage;
+    private AppConfig appConfig;
 
-    public DataStorage() {
+    private static DataStorage instance;
+
+    private final ServerRequestsService serverRequestsService;
+
+    public static DataStorage getInstance(AppConfig appConfig) {
+        if (instance == null) {
+            instance = new DataStorage(appConfig);
+        }
+
+        return instance;
+    }
+
+    private DataStorage(AppConfig appConfig) {
         ffStorage = collectFlags();
+        this.appConfig = appConfig;
+        serverRequestsService = new ServerRequestsServiceImp();
     }
 
     public boolean getValue(String flagKey) {
         if (ffStorage.putIfAbsent(flagKey, false) == null) {
             System.out.println("Flag not found: " + flagKey + " Creating flag.");
+            serverRequestsService.createFeatureFlag();
         };
-        //TODO: call to main service
+        //TODO: call to kafka topic
         return ffStorage.get(flagKey);
     }
 
     private HashMap<String, Boolean> collectFlags() {
-        //TODO: replace with call to main service / or add call to main service
+        //TODO: replace with call to kafka topic / or add call to kafka topic
 
         HashMap<String, Boolean> ffMap = new HashMap<>();
 
@@ -42,8 +62,9 @@ public class DataStorage {
                 ffMap.put(key, value);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("Error occurred in feature-flags.properties");
+            //e.printStackTrace();
         }
 
         return ffMap;
