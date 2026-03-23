@@ -2,6 +2,7 @@ package org.redflag.server;
 
 import org.redflag.configuration.AppConfig;
 import org.redflag.service.ServerRequestsService;
+import org.redflag.service.impl.KafkaFeatureFlagConsumer;
 import org.redflag.service.impl.ServerRequestsServiceImp;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ public class DataStorage {
     private static DataStorage instance;
 
     private final ServerRequestsService serverRequestsService;
+    private final KafkaFeatureFlagConsumer kafkaConsumer;
 
     public static DataStorage getInstance(AppConfig appConfig) {
         if (instance == null) {
@@ -27,17 +29,24 @@ public class DataStorage {
     }
 
     private DataStorage(AppConfig appConfig) {
-        ffStorage = collectFlags();
+        this.ffStorage = collectFlags();
         this.appConfig = appConfig;
-        serverRequestsService = new ServerRequestsServiceImp();
+        this.serverRequestsService = new ServerRequestsServiceImp();
+        this.kafkaConsumer = new KafkaFeatureFlagConsumer(appConfig);
+
+        this.kafkaConsumer.startConsuming();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
     public boolean getValue(String flagKey) {
+        Boolean kafkaValue = kafkaConsumer.getFlagValue(flagKey);
         if (ffStorage.putIfAbsent(flagKey, false) == null) {
             System.out.println("Flag not found: " + flagKey + " Creating flag.");
             serverRequestsService.createFeatureFlag();
         };
-        //TODO: call to kafka topic
+
+        ffStorage.put(flagKey, kafkaValue);
         return ffStorage.get(flagKey);
     }
 
@@ -63,10 +72,14 @@ public class DataStorage {
             }
 
         } catch (IOException e) {
-            System.err.println("Error occurred in feature-flags.properties");
-            //e.printStackTrace();
+            throw  new RuntimeException("Error occurred in feature-flags.properties", e);
         }
 
         return ffMap;
+    }
+
+    private void shutdown() {
+        System.out.println("Shutting down DataStorage...");
+        kafkaConsumer.shutdown();
     }
 }

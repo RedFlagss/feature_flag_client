@@ -5,6 +5,9 @@ import org.redflag.dto.UsernamePasswordCredentials;
 import org.redflag.service.ServerRequestsService;
 import org.redflag.service.impl.ServerRequestsServiceImp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AppConfig {
     @Getter
     private final String backendUrl;
@@ -14,6 +17,8 @@ public class AppConfig {
     private final String sdkPassword;
     @Getter
     private static AppConfig instance;
+    @Getter
+    private final List<String> kafkaTopics;
 
     private final ServerRequestsService serverRequestsService;
 
@@ -23,7 +28,9 @@ public class AppConfig {
         this.sdkPassword = sdkPassword;
         serverRequestsService = new ServerRequestsServiceImp();
 
-        serverRequestsService.registerSDK(new UsernamePasswordCredentials(sdkLogin, sdkPassword));
+        serverRequestsService.authenticateSDK(new UsernamePasswordCredentials(sdkLogin, sdkPassword));
+
+        kafkaTopics = serverRequestsService.getFeatureFlagTopics().getTopics();
     }
 
     public static AppConfig createInstance(String backendUrl, String sdkLogin, String sdkPassword) {

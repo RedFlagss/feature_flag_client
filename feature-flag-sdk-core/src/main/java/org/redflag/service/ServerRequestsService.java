@@ -1,12 +1,14 @@
 package org.redflag.service;
 
+import org.redflag.dto.FeatureFlagTopicsRequest;
+import org.redflag.dto.SDKAuthResponse;
 import org.redflag.dto.UsernamePasswordCredentials;
-
-import java.util.Map;
 
 public interface ServerRequestsService {
 
-    public void registerSDK(UsernamePasswordCredentials credentials);
+    public SDKAuthResponse authenticateSDK(UsernamePasswordCredentials credentials);
+
+    public FeatureFlagTopicsRequest getFeatureFlagTopics();
 
     public void createFeatureFlag();
 
