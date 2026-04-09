@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SDKAuthResponse {
-    private String access_token;
-    private String token_type;
+public class FeatureFlagDTO {
+    private Long id;
+    private Long nodeId;
+    private String name;
+    private boolean value;
+    private String version;
 }

@@ -5,11 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SDKAuthResponse {
-    private String access_token;
-    private String token_type;
+public class FeatureFlagsResponse {
+    private String nodeUuid;
+    private List<FeatureFlagDTO> items;
+    private Integer total;
 }
