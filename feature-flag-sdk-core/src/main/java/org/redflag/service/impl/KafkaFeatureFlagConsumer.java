@@ -1,17 +1,15 @@
 package org.redflag.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.redflag.configuration.AppConfig;
 import org.redflag.dto.FeatureFlagUpdate;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,26 +29,9 @@ public class KafkaFeatureFlagConsumer {
         this.executorService = Executors.newSingleThreadExecutor();
         this.objectMapper = new ObjectMapper();
 
-        Properties consumerProperties = new Properties();
-        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "feature-flag-consumer");
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        consumerProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        consumerProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-
-        consumerProperties.put("security.protocol", "SASL_PLAINTEXT");
-        consumerProperties.put("sasl.mechanism", "PLAIN");
-        consumerProperties.put("sasl.jaas.config",
-                "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                        "username=\"" + appConfig.getSdkLogin() + "\" " +
-                        "password=\"" + appConfig.getSdkPassword() + "\";");
-
-        this.kafkaConsumer = new KafkaConsumer<>(consumerProperties);
-        this.kafkaConsumer.subscribe(appConfig.getKafkaTopics());
+        this.kafkaConsumer = new KafkaConsumer<>(appConfig.getKafkaConfig().getProperties());
+        this.kafkaConsumer.subscribe(Collections.singletonList(appConfig.getKafkaConfig().getTopicName()));
     }
-
-
 
     public void startConsuming() {
         executorService.submit(() -> {
@@ -71,8 +52,8 @@ public class KafkaFeatureFlagConsumer {
     private void processRecord(ConsumerRecord<String, String> record) {
         try {
             FeatureFlagUpdate update = objectMapper.readValue(record.value(), FeatureFlagUpdate.class);
-            featureFlags.put(update.getFlagKey(), update.getFlagValue());
-            System.out.println("Updated feature flag: " + update.getFlagKey() + " = " + update.getFlagValue());
+            featureFlags.put(update.getFlagName(), update.getValue());
+            System.out.println("Updated feature flag: " + update.getFlagName() + " = " + update.getValue());
         } catch (Exception e) {
             System.err.println("Failed to parse feature flag update: " + e.getMessage());
         }

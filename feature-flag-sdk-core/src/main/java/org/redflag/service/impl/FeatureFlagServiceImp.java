@@ -1,6 +1,5 @@
 package org.redflag.service.impl;
 
-import org.redflag.configuration.AppConfig;
 import org.redflag.server.DataStorage;
 import org.redflag.service.FeatureFlagService;
 
